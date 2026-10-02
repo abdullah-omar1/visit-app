@@ -701,12 +701,20 @@ async function init(){
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
   catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
   dbx=makeDb(fs,CODE);
-  var onErr=function(){setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.")};
-  var sub=function(c,ref){ref.onSnapshot(function(sn){
-    S[c]=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});
-    got[c]=true;if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}if(got.cat&&got.cg&&got.cur&&got.vis)hideLoader()
+  var onErr=function(){
+    setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.");
+    hideLoader();
     draw();
-  },onErr)};
+  };
+  var sub=function(c,ref){
+    ref.onSnapshot(function(sn){
+      S[c]=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});
+      got[c]=true;
+      if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}
+      if(got.cat&&got.cg&&got.cur&&got.vis)hideLoader();
+      draw();
+    },onErr);
+  };
   dbx.doc("meta/visit").onSnapshot(function(d){V=d.exists?Object.assign({},d.data()):{};draw()},onErr);
   sub("cg",dbx.collection("categories"));sub("cat",dbx.collection("catalog"));sub("cur",dbx.collection("cur"));
   sub("vis",dbx.collection("visits").orderBy("ts","desc").limit(60));
