@@ -24,7 +24,13 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141f;--card:#1a2031;--ink:#e8ecf7;--mute:#93a0ba;--line:#2a3249;--acc:#8ea2ff;--accsoft:#252d4d;--ok:#4cc58d;--star:#f0c040;--onacc:#10141f;--okbg:#1d3a30;--nabg:#3a2c14;--nafg:#f2b35c;--abs:35%;--abl:26%;--afs:70%;--afl:82%}}
 :root[data-theme="dark"]{--bg:#10141f;--card:#1a2031;--ink:#e8ecf7;--mute:#93a0ba;--line:#2a3249;--acc:#8ea2ff;--accsoft:#252d4d;--ok:#4cc58d;--star:#f0c040;--onacc:#10141f;--okbg:#1d3a30;--nabg:#3a2c14;--nafg:#f2b35c;--abs:35%;--abl:26%;--afs:70%;--afl:82%}
 *{box-sizing:border-box}
-[hidden]{display:none!important}
+[hidden]{display:none!important}#bootLoader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);transition:opacity .25s ease,visibility .25s ease}
+#bootLoader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.bootCard{width:min(88vw,340px);text-align:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 20px;box-shadow:0 10px 35px rgba(0,0,0,.08)}
+.bootLogo{width:58px;height:58px;margin:0 auto 14px;border-radius:16px;display:grid;place-items:center;background:var(--accsoft);font-size:28px}
+.bootTitle{font-size:19px;font-weight:700;margin-bottom:5px}.bootText{font-size:14px;color:var(--mute)}
+.bootSpinner{width:30px;height:30px;margin:16px auto 0;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:bootSpin .8s linear infinite}
+@keyframes bootSpin{to{transform:rotate(360deg)}}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
 main{max-width:520px;margin:0 auto;padding:16px 16px 56px}
@@ -137,6 +143,7 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 </style>
 </head>
 <body>
+<div id="bootLoader" role="status" aria-live="polite"><div class="bootCard"><div class="bootLogo">💛</div><div class="bootTitle">بنجهّز الزيارة</div><div class="bootText">استنى لحظة لحد ما الداتا تكتمل…</div><div class="bootSpinner" aria-hidden="true"></div></div></div>
 <main>
 <div class="thx"><b>شكرا يا ماما 💛</b><span>على كل حاجة</span></div>
 <div class="mode" id="mode"></div>
@@ -583,6 +590,7 @@ $("isave").onclick=function(){
   var o=inCur(ci.id);if(o){o.name=v;o.cat=ci.cat;save("cur",o)}
   closeItem();draw();say("اتحفظت التعديلات.");
 };
+function hideLoader(){var l=$("bootLoader");if(l){l.classList.add("hide");setTimeout(function(){l.remove()},300)}}
 function setMode(t){$("mode").textContent=t}
 function str(x,n){return String(x==null?"":x).slice(0,n||200)}
 function pairs(a){return(Array.isArray(a)?a:[]).slice(0,500).map(function(x){return{name:str(x&&x.name),cat:str(x&&x.cat),qty:Math.min(99,Math.max(1,Number(x&&x.qty)||1)),note:str(x&&x.note,120),at:Number(x&&x.at)||0}}).filter(function(x){return x.name})}
@@ -678,8 +686,8 @@ async function init(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(function(){});
   }
-  if(!CODE){go("setup");return}
-  if(/PASTE_|YOUR_/.test(JSON.stringify(firebaseConfig))){setMode("ملف config.js لسه فاضي. اتبع خطوات README.");draw();return}
+  if(!CODE){go("setup");hideLoader();return}
+  if(/PASTE_|YOUR_/.test(JSON.stringify(firebaseConfig))){setMode("ملف config.js لسه فاضي. اتبع خطوات README.");draw();hideLoader();return}
   var fs,auth;
   try{
     var app=initializeApp(firebaseConfig);
@@ -689,14 +697,14 @@ async function init(){
       fs=initializeFirestore(app);
     }
     auth=getAuth(app);
-  }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();return}
+  }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
-  catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();return}}
+  catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
   dbx=makeDb(fs,CODE);
   var onErr=function(){setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.")};
   var sub=function(c,ref){ref.onSnapshot(function(sn){
     S[c]=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});
-    got[c]=true;if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}
+    got[c]=true;if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}if(got.cat&&got.cg&&got.cur&&got.vis)hideLoader()
     draw();
   },onErr)};
   dbx.doc("meta/visit").onSnapshot(function(d){V=d.exists?Object.assign({},d.data()):{};draw()},onErr);
