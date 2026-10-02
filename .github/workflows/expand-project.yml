@@ -1,0 +1,35 @@
+name: Expand project archive
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand project archive
+        run: |
+          set -e
+          rm -rf .expanded
+          mkdir -p .expanded
+          unzip -o visit-app-ready.zip -d .expanded
+          SRC=".expanded"
+          if [ -d ".expanded/visit-app" ]; then SRC=".expanded/visit-app"; fi
+          cp -R "$SRC"/. ./
+          rm -rf .expanded
+          rm -f visit-app-ready.zip
+          rm -f .github/workflows/expand-project.yml
+      - name: Commit expanded project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "feat: expand visit-app project source"
+          git push
