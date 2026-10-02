@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // كل مساحة ليها كود طويل سري. مفيش حد يقدر يعرض أو يخمّن أكواد المساحات التانية.
+    match /spaces/{space}/{document=**} {
+      allow read, write: if request.auth != null && space.size() >= 20;
+    }
+  }
+}
