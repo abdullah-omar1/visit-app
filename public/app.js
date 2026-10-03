@@ -74,7 +74,7 @@ function drawMeta(){
   st.appendChild(b);
 }
 $("vdate").onchange=function(){if(canWrite)setVMeta({date:this.value})};
-function toast(m,fn){var t=$("toast");$("tmsg").textContent=m;undoFn=fn||null;$("tund").hidden=!fn;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;undoFn=null},4500)}
+function toast(m,fn){var t=$("toast");$("tmsg").textContent=m;undoFn=fn||null;$("tund").hidden=!fn;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;undoFn=null},3000)}
 $("tund").onclick=function(){var f=undoFn;undoFn=null;$("toast").hidden=true;if(f)f()};
 /*SUG*/
 function dd(ms){var d=Math.max(1,Math.round(ms/864e5));return d<14?(d===1?"يوم":d===2?"يومين":d<=10?d+" أيام":d+" يوم"):Math.round(d/7)+" أسابيع"}
@@ -468,7 +468,7 @@ $("shareWa").onclick=function(){
   try{w=window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank")}catch(e){}
   if(!w)copyText(t,"اتنسخ الرابط، الصقه في واتساب.");
 };
-$("shareCp").onclick=function(){copyText(shareLink(),"اتنسخ رابط الدعوة. أي حد معاه الرابط يقدر يدخل ويعدل.")};
+$("shareCp").onclick=function(){copyText(shareLink(),"اتنسخ رابط الدعوة ✓");};
 var lvT;
 $("leave").onclick=function(){
   var b=this;
@@ -491,6 +491,10 @@ async function autoImageForCatalog(){
     "مانجو":["mango","mango fruit","fresh mango"],
     "قرنفل":["clove","cloves","clove spice"],
     "قراقيش":["qarqeesh","qarqish","egyptian crackers","crackers","sesame crackers"],
+    "كوبايات تيليو بن بنادول ديكانست":["Tchibo coffee cups","Panadol Decongestant","Panadol Cold and Flu","Tchibo decaf"],
+    "كوبايات تيليو بنادول ديكانست":["Tchibo coffee cups","Panadol Decongestant","Panadol Cold and Flu","Tchibo decaf"],
+    "بنادول ديكانست":["Panadol Decongestant","Panadol Cold and Flu","Panadol Decongestant tablets"],
+    "بنادول ديكونجست":["Panadol Decongestant","Panadol Cold and Flu","Panadol Decongestant tablets"],
     "كوبايات بن تيليو ديكانست":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
     "كوبايات بن تيليو ديكاف":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
     "بن تيليو ديكانست":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
