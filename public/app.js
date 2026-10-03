@@ -580,6 +580,12 @@ async function autoImageForCatalog(){
   if(sync)sync.hidden=true;
 }
 async function init(){
+  var bootTimer=setTimeout(function(){
+    if(!(got.cat&&got.cg&&got.cur&&got.vis)){
+      hideLoader();
+      setMode("التطبيق فتح، لكن الداتا لسه ما وصلت. اضغط ↻ لإعادة المحاولة.");
+    }
+  },10000);
   var m=(location.hash||"").match(/c=([A-Za-z0-9_-]{20,})/);
   if(m){lset("-code",m[1]);try{history.replaceState(null,"",location.pathname)}catch(e){}}
   CODE=lget("-code","");V=lget("-vmeta",{});
@@ -598,12 +604,18 @@ async function init(){
     auth=getAuth(app);
   }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
-  catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
-  if(!CODE){showPasswordSetup(auth);hideLoader();return}
+  catch(e){clearTimeout(bootTimer);if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
+  if(!CODE&&auth.currentUser&&!auth.currentUser.isAnonymous){
+    var restored=codeFrom(auth.currentUser.displayName||"");
+    if(restored){CODE=restored;lset("-code",CODE)}
+  }
+  if(!CODE){clearTimeout(bootTimer);showPasswordSetup(auth);hideLoader();return}
   if(auth.currentUser&&(auth.currentUser.isAnonymous||(auth.currentUser.email||"").indexOf("space_")===0)){showSpaceGate(auth)}
   dbx=makeDb(fs,CODE);
-  var onErr=function(){
-    setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.");
+  var onErr=function(e){
+    clearTimeout(bootTimer);
+    var c=e&&e.code||"";
+    setMode(c==="permission-denied"?"الوصول للداتا مرفوض من قواعد Firestore.":"مشكلة في الاتصال بالداتا. اضغط ↻ وجرب تاني.");
     hideLoader();
     draw();
   };
@@ -613,13 +625,15 @@ async function init(){
       got[c]=true;
       if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}
       if(got.cat)autoImageForCatalog();
-      if(got.cat&&got.cg&&got.cur&&got.vis)hideLoader();
+      if(got.cat&&got.cg&&got.cur&&got.vis){clearTimeout(bootTimer);hideLoader();}
       draw();
     },onErr);
   };
-  dbx.doc("meta/visit").onSnapshot(function(d){V=d.exists?Object.assign({},d.data()):{};draw()},onErr);
-  sub("cg",dbx.collection("categories"));sub("cat",dbx.collection("catalog"));sub("cur",dbx.collection("cur"));
-  sub("vis",dbx.collection("visits").orderBy("ts","desc").limit(60));
+  try{
+    dbx.doc("meta/visit").onSnapshot(function(d){V=d.exists?Object.assign({},d.data()):{};draw()},onErr);
+    sub("cg",dbx.collection("categories"));sub("cat",dbx.collection("catalog"));sub("cur",dbx.collection("cur"));
+    sub("vis",dbx.collection("visits").orderBy("ts","desc").limit(60));
+  }catch(e){onErr(e);return}
   netMode();draw();
 }
 init();
