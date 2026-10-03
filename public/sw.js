@@ -1,5 +1,5 @@
 // Service worker: يخلي التطبيق يفتح من غير نت. غيّر رقم النسخة مع كل تحديث للتطبيق.
-const VERSION = "v3";
+const VERSION = "v4";
 const CACHE = "visit-app-" + VERSION;
 const SHELL = [
   "./",
@@ -39,7 +39,7 @@ self.addEventListener("fetch", (e) => {
 
   e.respondWith(
     (async () => {
-      const cached = await caches.match(req, { ignoreSearch: same });
+      const cached = await caches.match(req);
       const network = fetch(req)
         .then((res) => {
           if (res && (res.ok || res.type === "opaque")) {
