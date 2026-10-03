@@ -1,9 +1,105 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // كل مساحة ليها كود طويل سري. مفيش حد يقدر يعرض أو يخمّن أكواد المساحات التانية.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function validSpace() {
+      return space.matches('^[A-Za-z0-9_-]{20,36}$');
+    }
+
+    function validName() {
+      return request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60;
+    }
+
+    function validCatalog() {
+      return request.resource.data.keys().hasOnly(['name','cat','pin','img','note'])
+        && validName()
+        && request.resource.data.cat is string
+        && request.resource.data.cat.size() <= 60
+        && request.resource.data.pin is bool
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 120
+        && request.resource.data.img is string
+        && request.resource.data.img.size() <= 250000;
+    }
+
+    function validCategory() {
+      return request.resource.data.keys().hasOnly(['name','ts'])
+        && validName()
+        && request.resource.data.ts is number;
+    }
+
+    function validCur() {
+      return request.resource.data.keys().hasOnly(['name','cat','note','qty','done','na','ts','at'])
+        && validName()
+        && request.resource.data.cat is string
+        && request.resource.data.cat.size() <= 60
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 120
+        && request.resource.data.qty is number
+        && request.resource.data.qty >= 1
+        && request.resource.data.qty <= 99
+        && request.resource.data.done is bool
+        && request.resource.data.na is bool
+        && request.resource.data.ts is number
+        && request.resource.data.at is number;
+    }
+
+    function validVisit() {
+      return request.resource.data.keys().hasOnly(['ts','bought','left','na'])
+        && request.resource.data.ts is number
+        && request.resource.data.bought is list
+        && request.resource.data.left is list
+        && request.resource.data.na is list
+        && request.resource.data.bought.size() <= 500
+        && request.resource.data.left.size() <= 500
+        && request.resource.data.na.size() <= 500;
+    }
+
+    function validMeta() {
+      return request.resource.data.keys().hasOnly(['date','ready','readyAt'])
+        && request.resource.data.date is string
+        && request.resource.data.date.size() <= 10
+        && request.resource.data.ready is bool
+        && request.resource.data.readyAt is number;
+    }
+
+    match /spaces/{space}/catalog/{id} {
+      allow read: if signedIn() && validSpace();
+      allow create, update: if signedIn() && validSpace() && validCatalog();
+      allow delete: if signedIn() && validSpace();
+    }
+
+    match /spaces/{space}/categories/{id} {
+      allow read: if signedIn() && validSpace();
+      allow create, update: if signedIn() && validSpace() && validCategory();
+      allow delete: if signedIn() && validSpace();
+    }
+
+    match /spaces/{space}/cur/{id} {
+      allow read: if signedIn() && validSpace();
+      allow create, update: if signedIn() && validSpace() && validCur();
+      allow delete: if signedIn() && validSpace();
+    }
+
+    match /spaces/{space}/visits/{id} {
+      allow read: if signedIn() && validSpace();
+      allow create, update: if signedIn() && validSpace() && validVisit();
+      allow delete: if signedIn() && validSpace();
+    }
+
+    match /spaces/{space}/meta/{doc} {
+      allow read: if signedIn() && validSpace() && doc == 'visit';
+      allow create, update: if signedIn() && validSpace() && doc == 'visit' && validMeta();
+      allow delete: if signedIn() && validSpace() && doc == 'visit';
+    }
+
     match /spaces/{space}/{document=**} {
-      allow read, write: if request.auth != null && space.size() >= 20;
+      allow read, write: if false;
     }
   }
 }
