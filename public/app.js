@@ -253,7 +253,11 @@ $("undoFin").onclick=function(){
 };
 function listText(){
   var p=S.cur.filter(function(i){return !i.done&&!i.na});
-  return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":\n":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("\n")}).join("\n\n");
+  return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":
+":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("
+")}).join("
+
+");
 }
 function copyText(t,msg){
   var ok=function(){toast("تم النسخ ✓");};
@@ -263,7 +267,9 @@ function copyText(t,msg){
 $("copy").onclick=function(){var t=listText();if(!t){say("مفيش حاجة محتاجة تتطلب.");return}copyText(t,"اتنسخت الزيارة.")};
 $("wa").onclick=function(){
   var t=listText();if(!t){say("مفيش حاجة محتاجة تتطلب.");return}
-  var full="طلبات الزيارة"+(V.date?" ("+fmtDate(V.date)+")":"")+":\n\n"+t;
+  var full="طلبات الزيارة"+(V.date?" ("+fmtDate(V.date)+")":"")+":
+
+"+t;
   if(navigator.share){
     navigator.share({title:"طلبات الزيارة",text:full}).catch(function(){
       try{var w=window.open("https://wa.me/?text="+encodeURIComponent(full),"_blank");if(!w)copyText(full,"مقدرتش أفتح واتساب، اتنسخت القائمة.")}catch(e){copyText(full,"مقدرتش أفتح واتساب، اتنسخت القائمة.")}
@@ -465,12 +471,20 @@ function createPasswordSpace(auth,p){return passwordEmail(p).then(function(email
 function showPasswordSetup(auth){var box=$("passwordSetup"),inp=$("newSpacePass"),nameInp=$("newSpaceName"),msg=$("newSpaceMsg");if(!box)return;var busy=false;$("createPasswordSpace").onclick=async function(){if(busy)return;var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}busy=true;msg.textContent="بننشئ المساحة…";try{await createPasswordSpace(auth,p);setSpaceName(nameInp&&nameInp.value);location.reload()}catch(e){msg.textContent=authErr(e)}finally{busy=false}};$("passwordLinkGo").onclick=function(){var c=codeFrom($("passwordLink").value);if(!c){msg.textContent="الرابط أو الكود مش صحيح.";return}lset("-code",c);location.reload()}}
 function newCode(){var a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,function(b){return b.toString(36).padStart(2,"0")}).join("").slice(0,36)}
 function codeFrom(t){t=String(t||"").trim();var m=t.match(/c=([A-Za-z0-9_-]{20,})/)||t.match(/^([A-Za-z0-9_-]{20,})$/);return m?m[1]:""}
-function spaceName(){return SPACE_NAME||lget("-space-name","مساحة الزيارة")}\nfunction setSpaceName(n){n=String(n||"").trim().slice(0,60);if(!n)n="مساحة الزيارة";SPACE_NAME=n;lset("-space-name",n);drawSpaceName()}\nfunction drawSpaceName(){var b=$("spaceName");if(b)b.textContent=spaceName()}\ndocument.addEventListener("click",function(e){if(e.target&&e.target.closest&&e.target.closest("#spaceNameEdit")){var n=prompt("اسم المساحة",spaceName());if(n!==null){setSpaceName(n);say("اتحفظ اسم المساحة ✓")}}});\nfunction shareLink(){return location.origin+location.pathname.replace(/index\.html$/,"")+"#c="+CODE}
+function spaceName(){return SPACE_NAME||lget("-space-name","مساحة الزيارة")}
+function setSpaceName(n){n=String(n||"").trim().slice(0,60);if(!n)n="مساحة الزيارة";SPACE_NAME=n;lset("-space-name",n);drawSpaceName()}
+function drawSpaceName(){var b=$("spaceName");if(b)b.textContent=spaceName()}
+document.addEventListener("click",function(e){if(e.target&&e.target.closest&&e.target.closest("#spaceNameEdit")){var n=prompt("اسم المساحة",spaceName());if(n!==null){setSpaceName(n);say("اتحفظ اسم المساحة ✓")}}});
+function shareLink(){return location.origin+location.pathname.replace(/index\.html$/,"")+"#c="+CODE}
 $("codeGo").onclick=function(){var c=codeFrom($("code").value);if(!c){$("smsg").textContent="الرابط أو الكود مش صحيح.";return}lset("-code",c);location.reload()};
 $("codeNew").onclick=function(){lset("-code",newCode());location.reload()};
 $("shareWa").onclick=function(){
   var link=shareLink();
-  var t="افتحي الرابط ده مرة واحدة من المتصفح، وبعدين ثبّتي التطبيق:\n• آيفون (Safari): مشاركة □↑ ← إضافة إلى الشاشة الرئيسية\n• أندرويد (Chrome): القايمة ⋮ ← تثبيت التطبيق\n\n"+link;
+  var t="افتحي الرابط ده مرة واحدة من المتصفح، وبعدين ثبّتي التطبيق:
+• آيفون (Safari): مشاركة □↑ ← إضافة إلى الشاشة الرئيسية
+• أندرويد (Chrome): القايمة ⋮ ← تثبيت التطبيق
+
+"+link;
   if(navigator.share){
     navigator.share({title:"تجهيز الزيارة",text:t,url:link}).catch(function(){
       try{var w=window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank");if(!w)copyText(t,"اتنسخ الرابط، الصقه في واتساب.")}catch(e){copyText(t,"اتنسخ الرابط، الصقه في واتساب.")}
@@ -482,7 +496,8 @@ $("shareWa").onclick=function(){
   if(!w)copyText(t,"اتنسخ الرابط، الصقه في واتساب.");
 };
 $("shareCp").onclick=function(){copyText(shareLink(),"اتنسخ رابط الدعوة ✓");};
-$("leave").onclick=async function(){var b=this;b.disabled=true;b.textContent="بنخرج…";try{var appAuth=window.__visitAuth;if(appAuth&&appAuth.currentUser)await signOut(appAuth);lset("-code","");lset("-space-name","");location.reload()}catch(e){b.disabled=false;b.textContent="خروج من المساحة على الجهاز ده";say("الخروج متعطل دلوقتي. جرّب تاني.")}};\nasync function autoImageForCatalog(){
+$("leave").onclick=async function(){var b=this;b.disabled=true;b.textContent="بنخرج…";try{var appAuth=window.__visitAuth;if(appAuth&&appAuth.currentUser)await signOut(appAuth);lset("-code","");lset("-space-name","");location.reload()}catch(e){b.disabled=false;b.textContent="خروج من المساحة على الجهاز ده";say("الخروج متعطل دلوقتي. جرّب تاني.")}};
+async function autoImageForCatalog(){
   if(window.__autoImagesBusy||!Array.isArray(S.cat)||!S.cat.length)return;
   var missing=S.cat.filter(function(i){return i&&!i.img&&i.name});
   if(!missing.length)return;
