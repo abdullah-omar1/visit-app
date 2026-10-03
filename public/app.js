@@ -146,8 +146,9 @@ function tile(o){
   m.appendChild(av);
   var tx=el("span","ttx"),tn=el("span","tn",o.name);if(o.qty>1)tn.appendChild(el("span","qty"," ×"+o.qty));tx.appendChild(tn);
   if(o.note)tx.appendChild(el("span","nt",o.note));
-  if(o.sub)tx.appendChild(el("span",o.subc||"ts",o.sub));
-  m.appendChild(tx);t.appendChild(m);
+  m.appendChild(tx);
+  if(o.sub)m.appendChild(el("span","tmeta "+(o.subc||"ts"),o.sub));
+  t.appendChild(m);
   if(hx){
     var a=el("div","tact"),btn=function(txt,lab,fn){var b=el("button",null,txt);b.setAttribute("aria-label",lab);b.onclick=fn;a.appendChild(b)};
     if(o.edit)btn("✎","كمية وملاحظة",o.edit);
