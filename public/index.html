@@ -690,6 +690,16 @@ async function autoImageForCatalog(){
     var hit=y.filter(function(t){return set[t]}).length;
     return hit/Math.max(1,Math.min(x.length,y.length));
   };
+  var aliases={
+    "مانجو":["mango","mango fruit"],
+    "قرنفل":["clove","cloves","clove spice"],
+    "قراقيش":["qarqeesh","qarqish","egyptian crackers","crackers"]
+  };
+  var terms=function(name){
+    var a=[name],k=norm(name).join(" ");
+    if(aliases[k])a=a.concat(aliases[k]);
+    return a.filter(function(v,i,x){return v&&x.indexOf(v)===i});
+  };
   var toData=async function(url){
     try{
       var res=await fetch(url,{mode:"cors"});
@@ -699,19 +709,45 @@ async function autoImageForCatalog(){
       return data&&data.length<250000?data:"";
     }catch(e){return ""}
   };
-  var find=async function(name){
-    try{
-      var u="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(name)+"&search_simple=1&action=process&json=1&page_size=8&fields=product_name,image_front_url,image_url";
-      var j=await (await fetch(u,{mode:"cors"})).json();
-      var ps=(j.products||[]).filter(function(p){return p&&(p.image_front_url||p.image_url)&&p.product_name});
-      ps.sort(function(a,b){return score(name,b.product_name)-score(name,a.product_name)});
-      var p=ps[0];
-      if(p&&score(name,p.product_name)>=0.5)return await toData(p.image_front_url||p.image_url);
-    }catch(e){}
+  var findOFF=async function(name){
+    var ts=terms(name);
+    for(var z=0;z<ts.length;z++){
+      try{
+        var u="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(ts[z])+"&search_simple=1&action=process&json=1&page_size=8&fields=product_name,image_front_url,image_url";
+        var j=await (await fetch(u,{mode:"cors"})).json();
+        var ps=(j.products||[]).filter(function(p){return p&&(p.image_front_url||p.image_url)&&p.product_name});
+        ps.sort(function(a,b){return score(ts[z],b.product_name)-score(ts[z],a.product_name)});
+        var p=ps[0];
+        if(p&&score(ts[z],p.product_name)>=0.5){
+          var d=await toData(p.image_front_url||p.image_url);
+          if(d)return d;
+        }
+      }catch(e){}
+    }
+    return "";
+  };
+  var findCommons=async function(name){
+    var ts=terms(name);
+    for(var z=0;z<ts.length;z++){
+      try{
+        var u="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(ts[z])+"&gsrnamespace=6&gsrlimit=5&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*";
+        var j=await (await fetch(u,{mode:"cors"})).json();
+        var pages=Object.values((j.query&&j.query.pages)||{});
+        for(var p=0;p<pages.length;p++){
+          var ii=pages[p].imageinfo&&pages[p].imageinfo[0];
+          var url=ii&&(ii.thumburl||ii.url);
+          if(url){
+            var d=await toData(url);
+            if(d)return d;
+          }
+        }
+      }catch(e){}
+    }
     return "";
   };
   for(var n=0;n<missing.length;n++){
-    var ci=missing[n],data=await find(ci.name);
+    var ci=missing[n],data=await findOFF(ci.name);
+    if(!data)data=await findCommons(ci.name);
     if(data&&!ci.img){ci.img=data;save("cat",ci);draw()}
     await new Promise(function(r){setTimeout(r,350)});
   }
