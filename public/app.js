@@ -1,6 +1,6 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection as fcol,doc as fdoc,setDoc as fset,deleteDoc as fdel,onSnapshot as fsnap,query as fquery,orderBy as forder,limit as flimit,getDoc as fget} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAuth,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,EmailAuthProvider,linkWithCredential} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {firebaseConfig} from "./config.js";
 var KEY="weekly-orders-v1",NAME={cat:"catalog",cur:"cur",vis:"visits",cg:"categories"},LK={cat:"-catalog",cur:"-cur",vis:"-visits",cg:"-categories"};
 var S={cat:[],cur:[],vis:[],cg:[]},got={},V={},ensured=false,rnFn=null,armedCat="",CODE="",itemO=null,itemPin=false,itemDel=false,deferredInstall=null,lastFin=null,undoFn=null,toastT,sheetO=null,sheetQ=1,phT=null,dbx=null,curCat="",newMode=false,manage=false,newVal="",needFocus=false,showDone=true,armed="",view="visit",canWrite=true,q={},msgT;
@@ -450,6 +450,30 @@ window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();def
 $("inst").onclick=function(){if(deferredInstall){deferredInstall.prompt();deferredInstall=null;$("inst").hidden=true}};
 if(isIOS()&&!isStandalone()){var tip=$("iosTip");if(tip)tip.hidden=false}
 if(isStandalone()){var ti=$("inst");if(ti)ti.hidden=true;var tp=$("iosTip");if(tp)tp.hidden=true}
+
+function spaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
+function showSpaceGate(auth){
+  var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;
+  g.hidden=false;inp.value="";msg.textContent="";
+  $("spaceJoin").onclick=async function(){
+    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 حروف أو أرقام على الأقل.";return}
+    msg.textContent="بنفتح المساحة…";
+    try{await signInWithEmailAndPassword(auth,spaceEmail(),p);g.hidden=true;location.reload()}
+    catch(e){msg.textContent="كلمة السر مش صحيحة أو المساحة لسه محتاجة تعيين كلمة سر."}
+  };
+  $("spaceSet").onclick=async function(){
+    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 حروف أو أرقام على الأقل.";return}
+    msg.textContent="بنثبت كلمة السر…";
+    try{
+      var u=auth.currentUser;
+      if(u&&u.isAnonymous){await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));g.hidden=true;location.reload()}
+      else{await createUserWithEmailAndPassword(auth,spaceEmail(),p);g.hidden=true;location.reload()}
+    }catch(e){
+      if(e&&e.code==="auth/email-already-in-use"){msg.textContent="المساحة ليها كلمة سر بالفعل. استخدم «فتح المساحة»."}
+      else msg.textContent="تعذر تعيين كلمة السر. جرّب كلمة مختلفة.";
+    }
+  };
+}
 function newCode(){var a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,function(b){return b.toString(36).padStart(2,"0")}).join("").slice(0,36)}
 function codeFrom(t){t=String(t||"").trim();var m=t.match(/c=([A-Za-z0-9_-]{20,})/)||t.match(/^([A-Za-z0-9_-]{20,})$/);return m?m[1]:""}
 function shareLink(){return location.origin+location.pathname.replace(/index\.html$/,"")+"#c="+CODE}
@@ -582,6 +606,7 @@ async function init(){
   }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
   catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
+  if(auth.currentUser&&auth.currentUser.isAnonymous){showSpaceGate(auth);hideLoader();return}
   dbx=makeDb(fs,CODE);
   var onErr=function(){
     setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.");
