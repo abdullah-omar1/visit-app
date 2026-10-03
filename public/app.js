@@ -1,6 +1,6 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection as fcol,doc as fdoc,setDoc as fset,deleteDoc as fdel,onSnapshot as fsnap,query as fquery,orderBy as forder,limit as flimit,getDoc as fget} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {getAuth,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,EmailAuthProvider,linkWithCredential,updateProfile} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAuth,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,EmailAuthProvider,linkWithCredential,updateProfile,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {firebaseConfig} from "./config.js";
 var KEY="weekly-orders-v1",NAME={cat:"catalog",cur:"cur",vis:"visits",cg:"categories"},LK={cat:"-catalog",cur:"-cur",vis:"-visits",cg:"-categories"};
 var S={cat:[],cur:[],vis:[],cg:[]},got={},V={},ensured=false,rnFn=null,armedCat="",CODE="",itemO=null,itemPin=false,itemDel=false,deferredInstall=null,lastFin=null,undoFn=null,toastT,sheetO=null,sheetQ=1,phT=null,dbx=null,curCat="",newMode=false,manage=false,newVal="",needFocus=false,showDone=true,armed="",view="visit",canWrite=true,q={},msgT;
@@ -483,10 +483,19 @@ $("shareWa").onclick=function(){
 };
 $("shareCp").onclick=function(){copyText(shareLink(),"اتنسخ رابط الدعوة ✓");};
 var lvT;
-$("leave").onclick=function(){
+$("leave").onclick=async function(){
   var b=this;
   if(!b.armed){b.armed=true;b.textContent="اضغط تاني للتأكيد (الداتا مش هتتمسح)";b.classList.add("warn");clearTimeout(lvT);lvT=setTimeout(function(){b.armed=false;b.textContent="خروج من المساحة على الجهاز ده";b.classList.remove("warn")},4000);return}
-  lset("-code","");location.reload();
+  b.disabled=true;b.textContent="بنخرج…";
+  try{
+    var appAuth=window.__visitAuth;
+    if(appAuth&&appAuth.currentUser)await signOut(appAuth);
+    lset("-code","");
+    location.reload();
+  }catch(e){
+    b.disabled=false;b.armed=false;b.textContent="خروج من المساحة على الجهاز ده";b.classList.remove("warn");
+    say("الخروج متعطل دلوقتي. جرّب تاني.");
+  }
 };
 async function autoImageForCatalog(){
   if(window.__autoImagesBusy||!Array.isArray(S.cat)||!S.cat.length)return;
@@ -603,7 +612,7 @@ async function init(){
     }catch(cacheErr){
       fs=initializeFirestore(app);
     }
-    auth=getAuth(app);
+    auth=getAuth(app);window.__visitAuth=auth;
   }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
   catch(e){clearTimeout(bootTimer);if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
