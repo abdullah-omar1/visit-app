@@ -253,11 +253,7 @@ $("undoFin").onclick=function(){
 };
 function listText(){
   var p=S.cur.filter(function(i){return !i.done&&!i.na});
-  return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":
-":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("
-")}).join("
-
-");
+  return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":\n":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("\n")}).join("\n\n");
 }
 function copyText(t,msg){
   var ok=function(){toast("تم النسخ ✓");};
@@ -267,9 +263,7 @@ function copyText(t,msg){
 $("copy").onclick=function(){var t=listText();if(!t){say("مفيش حاجة محتاجة تتطلب.");return}copyText(t,"اتنسخت الزيارة.")};
 $("wa").onclick=function(){
   var t=listText();if(!t){say("مفيش حاجة محتاجة تتطلب.");return}
-  var full="طلبات الزيارة"+(V.date?" ("+fmtDate(V.date)+")":"")+":
-
-"+t;
+  var full="طلبات الزيارة"+(V.date?" ("+fmtDate(V.date)+")":"")+":\n\n"+t;
   if(navigator.share){
     navigator.share({title:"طلبات الزيارة",text:full}).catch(function(){
       try{var w=window.open("https://wa.me/?text="+encodeURIComponent(full),"_blank");if(!w)copyText(full,"مقدرتش أفتح واتساب، اتنسخت القائمة.")}catch(e){copyText(full,"مقدرتش أفتح واتساب، اتنسخت القائمة.")}
@@ -480,11 +474,7 @@ $("codeGo").onclick=function(){var c=codeFrom($("code").value);if(!c){$("smsg").
 $("codeNew").onclick=function(){lset("-code",newCode());location.reload()};
 $("shareWa").onclick=function(){
   var link=shareLink();
-  var t="افتحي الرابط ده مرة واحدة من المتصفح، وبعدين ثبّتي التطبيق:
-• آيفون (Safari): مشاركة □↑ ← إضافة إلى الشاشة الرئيسية
-• أندرويد (Chrome): القايمة ⋮ ← تثبيت التطبيق
-
-"+link;
+  var t="افتحي الرابط ده مرة واحدة من المتصفح، وبعدين ثبّتي التطبيق:\n• آيفون (Safari): مشاركة □↑ ← إضافة إلى الشاشة الرئيسية\n• أندرويد (Chrome): القايمة ⋮ ← تثبيت التطبيق\n\n"+link;
   if(navigator.share){
     navigator.share({title:"تجهيز الزيارة",text:t,url:link}).catch(function(){
       try{var w=window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank");if(!w)copyText(t,"اتنسخ الرابط، الصقه في واتساب.")}catch(e){copyText(t,"اتنسخ الرابط، الصقه في واتساب.")}
