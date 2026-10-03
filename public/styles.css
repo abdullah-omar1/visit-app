@@ -46,8 +46,8 @@ button:disabled{opacity:.45;pointer-events:none}
 .te{position:absolute;top:4px;inset-inline-start:4px;width:28px;height:28px;border-radius:50%;color:var(--mute);font-size:14px;background:var(--card)}
 .acl{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .acl button{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);text-align:start;font-size:16px}
-#toast{position:fixed;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:488px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:20;font-size:14px}
-#toast button{color:var(--bg);font-weight:700;text-decoration:underline;padding:4px}
+#toast{position:fixed;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:488px;margin:0 auto;background:#10141f;color:#e8ecf7;border:1px solid #2a3249;border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:20;font-size:14px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+#toast button{color:#e8ecf7;font-weight:700;text-decoration:underline;padding:4px}
 #sheet,#rn,#isheet{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:30;-webkit-overflow-scrolling:touch}
 .sh{background:var(--card);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));max-height:min(92dvh,92vh);overflow:auto;-webkit-overflow-scrolling:touch}
 .stp{display:flex;align-items:center;gap:14px}
@@ -120,4 +120,4 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .vcard .tmain{min-height:70px;padding-top:10px;padding-bottom:10px}
 .vcard .tn{font-size:17px;font-weight:500}
 .vcard .ts,.vcard .nt{font-size:13px}
-@media (max-width:380px){.grid{grid-template-columns:1fr}.tmain{min-height:68px}.av,.av.has{width:44px;height:44px}}
+@media (max-width:380px){.vcard .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 5px}.vcard .tmain{min-height:70px;padding-left:34px;gap:6px}.vcard .av,.vcard .av.has{width:42px;height:42px}.vcard .tn{font-size:15px}.vcard .ts,.vcard .nt{font-size:11px}.vcard .tact button{width:24px;height:24px;font-size:12px}}
