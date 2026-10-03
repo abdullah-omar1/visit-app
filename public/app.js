@@ -452,28 +452,49 @@ $("inst").onclick=function(){if(deferredInstall){deferredInstall.prompt();deferr
 if(isIOS()&&!isStandalone()){var tip=$("iosTip");if(tip)tip.hidden=false}
 if(isStandalone()){var ti=$("inst");if(ti)ti.hidden=true;var tp=$("iosTip");if(tp)tp.hidden=true}
 
-function spaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
+function spaceEmail(){return "space_"+CODE+"@visit-app-mama.firebaseapp.com"}
+function legacySpaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
+function authErr(e){
+  var c=e&&e.code||"";
+  if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found")return "كلمة السر غير صحيحة.";
+  if(c==="auth/invalid-email")return "بيانات الدخول غير صالحة. جرّب تحديث التطبيق.";
+  if(c==="auth/too-many-requests")return "محاولات كتير. استنى دقيقة وجرب تاني.";
+  if(c==="auth/operation-not-allowed")return "تسجيل الدخول بكلمة سر مش مفعّل في Firebase. لازم تفعيل Email/Password مرة واحدة من إعدادات Authentication.";
+  if(c==="auth/network-request-failed")return "مفيش اتصال بالنت. اتصل بالنت وجرب تاني.";
+  return "تعذر فتح المساحة دلوقتي. جرّب تاني.";
+}
 function showSpaceGate(auth){
   var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;
   g.hidden=false;inp.value="";msg.textContent="";
+  var busy=false,done=function(){g.hidden=true;location.reload()};
   $("spaceJoin").onclick=async function(){
-    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 حروف أو أرقام على الأقل.";return}
-    msg.textContent="بنفتح المساحة…";
-    try{await signInWithEmailAndPassword(auth,spaceEmail(),p);g.hidden=true;location.reload()}
-    catch(e){msg.textContent="كلمة السر مش صحيحة أو المساحة لسه محتاجة تعيين كلمة سر."}
+    if(busy)return;
+    var p=inp.value.trim();if(p.length<8){msg.textContent="كلمة السر لازم تكون 8 أحرف أو أرقام على الأقل.";return}
+    busy=true;msg.textContent="بنفتح المساحة…";
+    try{
+      try{await signInWithEmailAndPassword(auth,spaceEmail(),p)}
+      catch(first){
+        if((first&&first.code)==="auth/user-not-found"||(first&&first.code)==="auth/invalid-credential")await signInWithEmailAndPassword(auth,legacySpaceEmail(),p);
+        else throw first;
+      }
+      done();
+    }catch(e){msg.textContent=authErr(e)}finally{busy=false}
   };
   $("spaceSet").onclick=async function(){
-    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 حروف أو أرقام على الأقل.";return}
-    msg.textContent="بنثبت كلمة السر…";
+    if(busy)return;
+    var p=inp.value.trim();if(p.length<8){msg.textContent="كلمة السر لازم تكون 8 أحرف أو أرقام على الأقل.";return}
+    busy=true;msg.textContent="بنثبت كلمة السر على نفس المساحة…";
     try{
       var u=auth.currentUser;
-      if(u&&u.isAnonymous){await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));g.hidden=true;location.reload()}
-      else{await createUserWithEmailAndPassword(auth,spaceEmail(),p);g.hidden=true;location.reload()}
+      if(!u||!u.isAnonymous){msg.textContent="الجلسة الحالية مش جاهزة للتعيين. افتح الرابط من جديد.";return}
+      await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));
+      done();
     }catch(e){
-      if(e&&e.code==="auth/email-already-in-use"){msg.textContent="المساحة ليها كلمة سر بالفعل. استخدم «فتح المساحة»."}
-      else if(e&&e.code==="auth/operation-not-allowed")msg.textContent="تسجيل الدخول بكلمة سر مش مفعّل للمساحة لسه.";
-      else msg.textContent="تعذر تعيين كلمة السر. جرّب كلمة مختلفة.";
-    }
+      var c=e&&e.code||"";
+      if(c==="auth/email-already-in-use")msg.textContent="المساحة ليها كلمة سر بالفعل. استخدم «فتح المساحة».";
+      else if(c==="auth/credential-already-in-use")msg.textContent="كلمة السر دي مرتبطة بمساحة مستخدم بالفعل. اختار كلمة مختلفة.";
+      else msg.textContent=authErr(e);
+    }finally{busy=false}
   };
 }
 function newCode(){var a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,function(b){return b.toString(36).padStart(2,"0")}).join("").slice(0,36)}
