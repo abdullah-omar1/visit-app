@@ -74,7 +74,7 @@ function drawMeta(){
   st.appendChild(b);
 }
 $("vdate").onchange=function(){if(canWrite)setVMeta({date:this.value})};
-function toast(m,fn){var t=$("toast");$("tmsg").textContent=m;undoFn=fn||null;$("tund").hidden=!fn;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;undoFn=null},8000)}
+function toast(m,fn){var t=$("toast");$("tmsg").textContent=m;undoFn=fn||null;$("tund").hidden=!fn;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true;undoFn=null},4500)}
 $("tund").onclick=function(){var f=undoFn;undoFn=null;$("toast").hidden=true;if(f)f()};
 /*SUG*/
 function dd(ms){var d=Math.max(1,Math.round(ms/864e5));return d<14?(d===1?"يوم":d===2?"يومين":d<=10?d+" أيام":d+" يوم"):Math.round(d/7)+" أسابيع"}
@@ -255,7 +255,7 @@ function listText(){
   return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":\n":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("\n")}).join("\n\n");
 }
 function copyText(t,msg){
-  var ok=function(){say(msg)};
+  var ok=function(){say("تم النسخ ✓");};
   var fb=function(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){say("مقدرتش أنسخ، حددها يدوي.")}document.body.removeChild(a)};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb();
 }
