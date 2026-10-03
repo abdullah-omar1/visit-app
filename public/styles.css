@@ -7,6 +7,8 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 *{box-sizing:border-box}
 [hidden]{display:none!important}#bootLoader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);transition:opacity .25s ease,visibility .25s ease}
 #bootLoader.hide{opacity:0;visibility:hidden;pointer-events:none}
+#bootLoader{animation:bootFailSafe 9s linear forwards}
+@keyframes bootFailSafe{0%,88%{opacity:1;visibility:visible;pointer-events:auto}100%{opacity:0;visibility:hidden;pointer-events:none}}
 .bootCard{width:min(88vw,340px);text-align:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 20px;box-shadow:0 10px 35px rgba(0,0,0,.08)}
 .bootLogo{width:58px;height:58px;margin:0 auto 14px;border-radius:16px;display:grid;place-items:center;background:var(--accsoft);font-size:28px}
 .bootTitle{font-size:19px;font-weight:700;margin-bottom:5px}.bootText{font-size:14px;color:var(--mute)}
@@ -100,9 +102,9 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .av.has{width:48px;height:48px;border-radius:50%;overflow:hidden;background:hsl(var(--h) var(--abs) var(--abl));position:relative}.av.loading::after{content:"";position:absolute;inset:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:bootSpin .7s linear infinite}.av.loading img{opacity:.22}
 .av img{width:100%;height:100%;object-fit:cover;padding:0;display:block}
 .ttx{display:flex;flex-direction:column;min-width:0;gap:2px;text-align:start;grid-column:2;grid-row:1}
-.tn{font-size:16px;font-weight:500;line-height:1.32;overflow-wrap:anywhere}
-.ts,.nt{font-size:12px;color:var(--mute);line-height:1.38;overflow-wrap:anywhere}
-.tmeta{grid-column:1/-1;grid-row:2;min-width:0;font-size:11px;color:var(--mute);line-height:1.25;overflow-wrap:anywhere;white-space:normal;padding-inline-start:2px}
+.tn{font-size:16px;font-weight:500;line-height:1.34;min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word}
+.ts,.nt{font-size:12px;color:var(--mute);line-height:1.4;min-width:0;white-space:normal;word-break:normal;overflow-wrap:break-word}
+.tmeta{grid-column:2;grid-row:2;min-width:0;font-size:11px;color:var(--mute);line-height:1.3;white-space:normal;word-break:normal;overflow-wrap:break-word;padding-inline:0 2px;text-align:start}
 .tmeta.tk{color:var(--ok);font-size:11px;font-weight:500}
 .tmeta.why{font-size:11px}
 .tact{position:absolute;top:4px;left:4px;right:auto;display:flex;gap:3px;z-index:2}
@@ -121,6 +123,6 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .vcard .grid{grid-template-columns:1fr;gap:6px}
 .vcard .tile{min-height:76px}
 .vcard .tmain{min-height:70px;padding-top:10px;padding-bottom:10px}
-.vcard .tn{font-size:17px;font-weight:500}
+.vcard .tn{font-size:17px;font-weight:500;line-height:1.35}
 .vcard .ts,.vcard .nt{font-size:13px}
-@media (max-width:380px){.vcard .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 5px}.vcard .tmain{min-height:72px;padding-left:34px;column-gap:6px}.vcard .av,.vcard .av.has{width:42px;height:42px}.vcard .tn{font-size:15px}.vcard .ts,.vcard .nt{font-size:11px}.vcard .tact button{width:24px;height:24px;font-size:12px}}
+@media (max-width:380px){.vcard .grid{grid-template-columns:1fr;gap:6px}.vcard .tmain{min-height:72px;padding-left:34px;column-gap:6px}.vcard .av,.vcard .av.has{width:42px;height:42px}.vcard .tn{font-size:15px}.vcard .ts,.vcard .nt{font-size:11px}.vcard .tact button{width:24px;height:24px;font-size:12px}}
