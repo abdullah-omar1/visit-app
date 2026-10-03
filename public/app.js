@@ -525,9 +525,13 @@ async function autoImageForCatalog(){
     "بن تيليو ديكانست":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
     "بن تيليو ديكاف":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"]
   };
-  var terms=function(name){
-    var a=[name],k=norm(name).join(" ");
+  var terms=function(name,cat){
+    var a=[name],k=norm(name).join(" "),ck=norm(cat||"");
     if(aliases[k])a=a.concat(aliases[k]);
+    if(/صيدليه|دواء|ادويه|medicine|pharmacy/.test(ck))a=a.concat(["pharmacy medicine","medicine tablets","medical products","pills"]);
+    if(/مشروبات|قهوه|شاي|بن/.test(ck))a=a.concat(["coffee cup","coffee beans","tea cup"]);
+    if(/ادوات منزليه|مطبخ|كوبايات|اكواب/.test(ck))a=a.concat(["coffee cup","tea cup","mug"]);
+
     return a.filter(function(v,i,x){return v&&x.indexOf(v)===i});
   };
   var toData=async function(url){
@@ -539,8 +543,8 @@ async function autoImageForCatalog(){
       return data&&data.length<250000?data:"";
     }catch(e){return ""}
   };
-  var findOFF=async function(name){
-    var ts=terms(name);
+  var findOFF=async function(name,cat){
+    var ts=terms(name,cat);
     for(var z=0;z<ts.length;z++){
       try{
         var u="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(ts[z])+"&search_simple=1&action=process&json=1&page_size=8&fields=product_name,image_front_url,image_url";
@@ -556,8 +560,8 @@ async function autoImageForCatalog(){
     }
     return "";
   };
-  var findCommons=async function(name){
-    var ts=terms(name);
+  var findCommons=async function(name,cat){
+    var ts=terms(name,cat);
     for(var z=0;z<ts.length;z++){
       try{
         var u="https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch="+encodeURIComponent(ts[z])+"&gsrnamespace=6&gsrlimit=5&prop=imageinfo&iiprop=url&iiurlwidth=320&format=json&origin=*";
@@ -578,8 +582,8 @@ async function autoImageForCatalog(){
   for(var n=0;n<missing.length;n++){
     var ci=missing[n];
     if(sync)sync.querySelector("span").textContent="بنجهّز صورة "+(n+1)+" من "+missing.length+"…";
-    var data=await findOFF(ci.name);
-    if(!data)data=await findCommons(ci.name);
+    var data=await findOFF(ci.name,ci.cat);
+    if(!data)data=await findCommons(ci.name,ci.cat);
     if(data&&!ci.img){ci.img=data;save("cat",ci);draw()}
     await new Promise(function(r){setTimeout(r,350)});
   }
