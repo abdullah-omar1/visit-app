@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
+    function signedIn(space) {
       return request.auth != null;
     }
 
@@ -69,33 +69,33 @@ service cloud.firestore {
     }
 
     match /spaces/{space}/catalog/{id} {
-      allow read: if signedIn() && validSpace();
-      allow create, update: if signedIn() && validSpace() && validCatalog();
-      allow delete: if signedIn() && validSpace();
+      allow read: if signedIn(space) && validSpace();
+      allow create, update: if signedIn(space) && validSpace() && validCatalog();
+      allow delete: if signedIn(space) && validSpace();
     }
 
     match /spaces/{space}/categories/{id} {
-      allow read: if signedIn() && validSpace();
-      allow create, update: if signedIn() && validSpace() && validCategory();
-      allow delete: if signedIn() && validSpace();
+      allow read: if signedIn(space) && validSpace();
+      allow create, update: if signedIn(space) && validSpace() && validCategory();
+      allow delete: if signedIn(space) && validSpace();
     }
 
     match /spaces/{space}/cur/{id} {
-      allow read: if signedIn() && validSpace();
-      allow create, update: if signedIn() && validSpace() && validCur();
-      allow delete: if signedIn() && validSpace();
+      allow read: if signedIn(space) && validSpace();
+      allow create, update: if signedIn(space) && validSpace() && validCur();
+      allow delete: if signedIn(space) && validSpace();
     }
 
     match /spaces/{space}/visits/{id} {
-      allow read: if signedIn() && validSpace();
-      allow create, update: if signedIn() && validSpace() && validVisit();
-      allow delete: if signedIn() && validSpace();
+      allow read: if signedIn(space) && validSpace();
+      allow create, update: if signedIn(space) && validSpace() && validVisit();
+      allow delete: if signedIn(space) && validSpace();
     }
 
     match /spaces/{space}/meta/{doc} {
-      allow read: if signedIn() && validSpace() && doc == 'visit';
-      allow create, update: if signedIn() && validSpace() && doc == 'visit' && validMeta();
-      allow delete: if signedIn() && validSpace() && doc == 'visit';
+      allow read: if signedIn(space) && validSpace() && doc == 'visit';
+      allow create, update: if signedIn(space) && validSpace() && doc == 'visit' && validMeta();
+      allow delete: if signedIn(space) && validSpace() && doc == 'visit';
     }
 
     match /spaces/{space}/{document=**} {
