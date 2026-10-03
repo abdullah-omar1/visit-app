@@ -470,8 +470,8 @@ function setSpaceName(n){n=String(n||"").trim().slice(0,60);if(!n)n="مساحة 
 function drawSpaceName(){var b=$("spaceName");if(b)b.textContent=spaceName()}
 document.addEventListener("click",function(e){if(e.target&&e.target.closest&&e.target.closest("#spaceNameEdit")){var n=prompt("اسم المساحة",spaceName());if(n!==null){setSpaceName(n);say("اتحفظ اسم المساحة ✓")}}});
 function shareLink(){return location.origin+location.pathname.replace(/index\.html$/,"")+"#c="+CODE}
-$("codeGo").onclick=function(){var c=codeFrom($("code").value);if(!c){$("smsg").textContent="الرابط أو الكود مش صحيح.";return}lset("-code",c);location.reload()};
-$("codeNew").onclick=function(){lset("-code",newCode());location.reload()};
+var oldCodeGo=$("codeGo");if(oldCodeGo)oldCodeGo.onclick=function(){var c=codeFrom($("code").value);if(!c){var sm=$("smsg");if(sm)sm.textContent="الرابط أو الكود مش صحيح.";return}lset("-code",c);location.reload()};
+var oldCodeNew=$("codeNew");if(oldCodeNew)oldCodeNew.onclick=function(){lset("-code",newCode());location.reload()};
 $("shareWa").onclick=function(){
   var link=shareLink();
   var t="افتحي الرابط ده مرة واحدة من المتصفح، وبعدين ثبّتي التطبيق:\n• آيفون (Safari): مشاركة □↑ ← إضافة إلى الشاشة الرئيسية\n• أندرويد (Chrome): القايمة ⋮ ← تثبيت التطبيق\n\n"+link;
