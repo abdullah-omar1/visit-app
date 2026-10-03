@@ -126,3 +126,5 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .vcard .tn{font-size:17px;font-weight:500;line-height:1.35}
 .vcard .ts,.vcard .nt{font-size:13px}
 @media (max-width:380px){.vcard .grid{grid-template-columns:1fr;gap:6px}.vcard .tmain{min-height:72px;padding-left:34px;column-gap:6px}.vcard .av,.vcard .av.has{width:42px;height:42px}.vcard .tn{font-size:15px}.vcard .ts,.vcard .nt{font-size:11px}.vcard .tact button{width:24px;height:24px;font-size:12px}}
+
+.thxCopy span{display:block}.thxCopy span b{font-size:14px;color:var(--ink)}#spaceNameEdit{font-size:13px;color:var(--mute);padding:2px 5px;border:1px solid var(--line);border-radius:8px;background:var(--card);vertical-align:middle}#spaceNameEdit:active{background:var(--accsoft)}
