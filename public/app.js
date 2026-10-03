@@ -9,21 +9,28 @@ function initTheme(){
   var saved=lget("-theme","");
   var root=document.documentElement;
   if(saved==="light"||saved==="dark")root.setAttribute("data-theme",saved);
-  var b=$("themeBtn"),rb=$("reloadBtn");
-  if(b){
-    var update=function(){
-      var dark=root.getAttribute("data-theme")==="dark"||(root.getAttribute("data-theme")!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
-      b.textContent=dark?"☀":"◐";b.title=dark?"الوضع الفاتح":"الوضع الداكن";
-    };
-    b.onclick=function(e){
+  var update=function(){
+    var b=$("themeBtn");
+    if(!b)return;
+    var dark=root.getAttribute("data-theme")==="dark"||(root.getAttribute("data-theme")!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+    b.textContent=dark?"☀":"◐";b.title=dark?"الوضع الفاتح":"الوضع الداكن";
+  };
+  update();
+  document.addEventListener("click",function(e){
+    var b=e.target&&e.target.closest?e.target.closest("#themeBtn"):null;
+    if(b){
       e.preventDefault();e.stopPropagation();
       var dark=root.getAttribute("data-theme")==="dark"||(root.getAttribute("data-theme")!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
       var next=dark?"light":"dark";
       root.setAttribute("data-theme",next);lset("-theme",next);update();
-    };
-    update();
-  }
-  if(rb)rb.onclick=function(e){e.preventDefault();e.stopPropagation();window.location.reload()};
+      return;
+    }
+    var rb=e.target&&e.target.closest?e.target.closest("#reloadBtn"):null;
+    if(rb){
+      e.preventDefault();e.stopPropagation();
+      window.location.reload();
+    }
+  },true);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initTheme);else initTheme();
 function norm(s){return s.trim().replace(/\s+/g," ").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()}
