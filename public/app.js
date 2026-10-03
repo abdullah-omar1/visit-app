@@ -452,6 +452,7 @@ async function autoImageForCatalog(){
   var missing=S.cat.filter(function(i){return i&&!i.img&&i.name});
   if(!missing.length)return;
   window.__autoImagesBusy=true;
+  var sync=$("syncLoader");if(sync){sync.hidden=false;sync.querySelector("span").textContent="بنجهّز صور المنتجات…"}
   var norm=function(s){return String(s||"").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim().split(/\\s+/).filter(Boolean)};
   var score=function(a,b){
     var x=norm(a),y=norm(b),set={};x.forEach(function(t){set[t]=1});
@@ -518,12 +519,15 @@ async function autoImageForCatalog(){
     return "";
   };
   for(var n=0;n<missing.length;n++){
-    var ci=missing[n],data=await findOFF(ci.name);
+    var ci=missing[n];
+    if(sync)sync.querySelector("span").textContent="بنجهّز صورة "+(n+1)+" من "+missing.length+"…";
+    var data=await findOFF(ci.name);
     if(!data)data=await findCommons(ci.name);
     if(data&&!ci.img){ci.img=data;save("cat",ci);draw()}
     await new Promise(function(r){setTimeout(r,350)});
   }
   window.__autoImagesBusy=false;
+  if(sync)sync.hidden=true;
 }
 async function init(){
   var m=(location.hash||"").match(/c=([A-Za-z0-9_-]{20,})/);
