@@ -679,6 +679,44 @@ $("leave").onclick=function(){
   if(!b.armed){b.armed=true;b.textContent="اضغط تاني للتأكيد (الداتا مش هتتمسح)";b.classList.add("warn");clearTimeout(lvT);lvT=setTimeout(function(){b.armed=false;b.textContent="خروج من المساحة على الجهاز ده";b.classList.remove("warn")},4000);return}
   lset("-code","");location.reload();
 };
+async function autoImageForCatalog(){
+  if(window.__autoImagesBusy||!Array.isArray(S.cat)||!S.cat.length)return;
+  var missing=S.cat.filter(function(i){return i&&!i.img&&i.name});
+  if(!missing.length)return;
+  window.__autoImagesBusy=true;
+  var norm=function(s){return String(s||"").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu," ").trim().split(/\\s+/).filter(Boolean)};
+  var score=function(a,b){
+    var x=norm(a),y=norm(b),set={};x.forEach(function(t){set[t]=1});
+    var hit=y.filter(function(t){return set[t]}).length;
+    return hit/Math.max(1,Math.min(x.length,y.length));
+  };
+  var toData=async function(url){
+    try{
+      var res=await fetch(url,{mode:"cors"});
+      if(!res.ok)throw 0;
+      var blob=await res.blob();
+      var data=await shrink(blob);
+      return data&&data.length<250000?data:"";
+    }catch(e){return ""}
+  };
+  var find=async function(name){
+    try{
+      var u="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(name)+"&search_simple=1&action=process&json=1&page_size=8&fields=product_name,image_front_url,image_url";
+      var j=await (await fetch(u,{mode:"cors"})).json();
+      var ps=(j.products||[]).filter(function(p){return p&&(p.image_front_url||p.image_url)&&p.product_name});
+      ps.sort(function(a,b){return score(name,b.product_name)-score(name,a.product_name)});
+      var p=ps[0];
+      if(p&&score(name,p.product_name)>=0.5)return await toData(p.image_front_url||p.image_url);
+    }catch(e){}
+    return "";
+  };
+  for(var n=0;n<missing.length;n++){
+    var ci=missing[n],data=await find(ci.name);
+    if(data&&!ci.img){ci.img=data;save("cat",ci);draw()}
+    await new Promise(function(r){setTimeout(r,350)});
+  }
+  window.__autoImagesBusy=false;
+}
 async function init(){
   var m=(location.hash||"").match(/c=([A-Za-z0-9_-]{20,})/);
   if(m){lset("-code",m[1]);try{history.replaceState(null,"",location.pathname)}catch(e){}}
