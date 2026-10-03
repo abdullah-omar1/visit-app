@@ -15,7 +15,8 @@ function initTheme(){
       var dark=root.getAttribute("data-theme")==="dark"||(root.getAttribute("data-theme")!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
       b.textContent=dark?"☀":"◐";b.title=dark?"الوضع الفاتح":"الوضع الداكن";
     };
-    b.onclick=function(){
+    b.onclick=function(e){
+      e.preventDefault();e.stopPropagation();
       var current=root.getAttribute("data-theme");
       var dark=current==="dark"||(current!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
       var next=dark?"light":"dark";
@@ -24,7 +25,7 @@ function initTheme(){
     update();
   }
   var rb=$("reloadBtn");
-  if(rb)rb.onclick=function(){window.location.reload()};
+  if(rb)rb.onclick=function(e){e.preventDefault();e.stopPropagation();window.location.reload()};
 }
 
 initTheme();
@@ -135,8 +136,8 @@ function tile(o){
   var hx=!!(o.corner||o.edit||o.gear);
   var t=el("div","tile"+(o.cls?" "+o.cls:""));t.style.setProperty("--h",hue(o.name));
   var m=el("button","tmain");m.onclick=o.on;
-  var letter=Array.from(o.name)[0]||"•",av=el("span","av"+(o.img&&!o.done?" has":""));
-  if(o.img&&!o.done){var im=el("img");im.alt="";im.src=o.img;im.onerror=function(){av.className="av";av.textContent=letter};av.appendChild(im)}
+  var letter=Array.from(o.name)[0]||"•",av=el("span","av"+(o.img&&!o.done?" has loading":""));
+  if(o.img&&!o.done){var im=el("img");im.alt="";im.loading="lazy";im.onload=function(){av.classList.remove("loading")};im.onerror=function(){av.className="av";av.textContent=letter};im.src=o.img;av.appendChild(im)}
   else av.textContent=o.done?"✓":letter;
   m.appendChild(av);
   var tx=el("span","ttx"),tn=el("span","tn",o.name);if(o.qty>1)tn.appendChild(el("span","qty"," ×"+o.qty));tx.appendChild(tn);
