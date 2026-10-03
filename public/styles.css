@@ -93,15 +93,15 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .vc b{display:block;margin-bottom:4px}
 .vc div{font-size:14px;color:var(--mute)}
 .vc .ok{color:var(--ok)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px;margin:0 0 4px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px;margin:0 0 4px}
 .tile{position:relative;display:flex;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:2px;overflow:hidden}
 .tmain{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:66px;padding:8px 2px 8px 36px;text-align:start;border:0;border-radius:10px;background:transparent}.tmain:active{background:var(--accsoft)}
 .av{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:20px;font-weight:700;background:hsl(var(--h) var(--abs) var(--abl));color:hsl(var(--h) var(--afs) var(--afl))}
 .av.has{width:48px;height:48px;border-radius:50%;overflow:hidden;background:hsl(var(--h) var(--abs) var(--abl));position:relative}.av.loading::after{content:"";position:absolute;inset:14px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:bootSpin .7s linear infinite}.av.loading img{opacity:.22}
 .av img{width:100%;height:100%;object-fit:cover;padding:0;display:block}
 .ttx{display:flex;flex-direction:column;min-width:0;flex:1;gap:2px;text-align:start}
-.tn{font-size:16px;font-weight:500;line-height:1.28;word-break:break-word}
-.ts,.nt{font-size:12px;color:var(--mute);line-height:1.3}
+.tn{font-size:16px;font-weight:500;line-height:1.32;overflow-wrap:anywhere}
+.ts,.nt{font-size:12px;color:var(--mute);line-height:1.38;overflow-wrap:anywhere}
 .tact{position:absolute;top:4px;left:4px;right:auto;display:flex;gap:3px;z-index:2}
 .tact button{width:26px;height:26px;border-radius:50%;color:var(--mute);font-size:13px;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.06)}
 .tile.done .av{background:var(--ok);color:#fff}
@@ -113,3 +113,11 @@ li.gh{font-size:13px;font-weight:700;color:var(--mute);padding:9px 12px 4px;back
 .iprev{display:flex;justify-content:center;margin:10px 0}.iprev img{width:96px;height:96px;object-fit:cover;border-radius:18px}
 .sh select{font:inherit;width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
 .sh .lbl{font-size:13px;color:var(--mute);margin:12px 0 6px}
+
+/* زيارة الحالية: مساحة كاملة للنص حتى لا تتزاحم البيانات مع الصورة أو أزرار الإجراءات */
+.vcard .grid{grid-template-columns:1fr;gap:6px}
+.vcard .tile{min-height:76px}
+.vcard .tmain{min-height:70px;padding-top:10px;padding-bottom:10px}
+.vcard .tn{font-size:17px;font-weight:500}
+.vcard .ts,.vcard .nt{font-size:13px}
+@media (max-width:380px){.grid{grid-template-columns:1fr}.tmain{min-height:68px}.av,.av.has{width:44px;height:44px}}
