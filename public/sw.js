@@ -1,5 +1,5 @@
 // Service worker: يخلي التطبيق يفتح من غير نت. غيّر رقم النسخة مع كل تحديث للتطبيق.
-const VERSION = "v6";
+const VERSION = "v7";
 const CACHE = "visit-app-" + VERSION;
 const SHELL = [
   "./",
@@ -57,7 +57,7 @@ self.addEventListener("fetch", (e) => {
         return cached || caches.match("index.html") || caches.match("./");
       }
 
-      // للباقي: كاش أولاً ثم شبكة
+      // للملفات الثابتة: الشبكة أولاً لضمان وصول آخر نسخة، والكاش يعمل كبديل عند انقطاع النت
       if (cached) {
         network.catch(() => {}); // تحديث في الخلفية
         return cached;
