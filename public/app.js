@@ -452,16 +452,18 @@ $("inst").onclick=function(){if(deferredInstall){deferredInstall.prompt();deferr
 if(isIOS()&&!isStandalone()){var tip=$("iosTip");if(tip)tip.hidden=false}
 if(isStandalone()){var ti=$("inst");if(ti)ti.hidden=true;var tp=$("iosTip");if(tp)tp.hidden=true}
 
-function spaceEmail(){return "space_"+CODE+"@visit-app-mama.firebaseapp.com"}
-function legacySpaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
+function spaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
+function modernSpaceEmail(){return "space_"+CODE+"@visit-app-mama.firebaseapp.com"}
 function authErr(e){
   var c=e&&e.code||"";
   if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found")return "كلمة السر غير صحيحة.";
   if(c==="auth/invalid-email")return "بيانات الدخول غير صالحة. جرّب تحديث التطبيق.";
   if(c==="auth/too-many-requests")return "محاولات كتير. استنى دقيقة وجرب تاني.";
-  if(c==="auth/operation-not-allowed")return "تسجيل الدخول بكلمة سر مش مفعّل في Firebase. لازم تفعيل Email/Password مرة واحدة من إعدادات Authentication.";
+  if(c==="auth/operation-not-allowed")return "Email/Password مش مفعّل في Firebase. لازم تفعيله مرة واحدة من Authentication.";
   if(c==="auth/network-request-failed")return "مفيش اتصال بالنت. اتصل بالنت وجرب تاني.";
-  return "تعذر فتح المساحة دلوقتي. جرّب تاني.";
+  if(c==="auth/provider-already-linked")return "المساحة دي بالفعل عليها كلمة سر. استخدم «فتح المساحة».";
+  if(c==="auth/credential-already-in-use")return "كلمة السر دي مرتبطة بمساحة تانية. اختار كلمة مختلفة.";
+  return "تعذر تعيين كلمة السر. جرّب تاني.";
 }
 function showSpaceGate(auth){
   var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;
@@ -469,12 +471,12 @@ function showSpaceGate(auth){
   var busy=false,done=function(){g.hidden=true;location.reload()};
   $("spaceJoin").onclick=async function(){
     if(busy)return;
-    var p=inp.value.trim();if(p.length<8){msg.textContent="كلمة السر لازم تكون 8 أحرف أو أرقام على الأقل.";return}
+    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}
     busy=true;msg.textContent="بنفتح المساحة…";
     try{
       try{await signInWithEmailAndPassword(auth,spaceEmail(),p)}
       catch(first){
-        if((first&&first.code)==="auth/user-not-found"||(first&&first.code)==="auth/invalid-credential")await signInWithEmailAndPassword(auth,legacySpaceEmail(),p);
+        if((first&&first.code)==="auth/user-not-found"||(first&&first.code)==="auth/invalid-credential")await signInWithEmailAndPassword(auth,modernSpaceEmail(),p);
         else throw first;
       }
       done();
@@ -482,19 +484,25 @@ function showSpaceGate(auth){
   };
   $("spaceSet").onclick=async function(){
     if(busy)return;
-    var p=inp.value.trim();if(p.length<8){msg.textContent="كلمة السر لازم تكون 8 أحرف أو أرقام على الأقل.";return}
+    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}
     busy=true;msg.textContent="بنثبت كلمة السر على نفس المساحة…";
     try{
       var u=auth.currentUser;
       if(!u||!u.isAnonymous){msg.textContent="الجلسة الحالية مش جاهزة للتعيين. افتح الرابط من جديد.";return}
-      await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));
+      try{
+        await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));
+      }catch(first){
+        var code=first&&first.code||"";
+        if(code==="auth/email-already-in-use"){
+          await signInWithEmailAndPassword(auth,spaceEmail(),p);
+        }else if(code==="auth/invalid-email"){
+          await linkWithCredential(u,EmailAuthProvider.credential(modernSpaceEmail(),p));
+        }else{
+          throw first;
+        }
+      }
       done();
-    }catch(e){
-      var c=e&&e.code||"";
-      if(c==="auth/email-already-in-use")msg.textContent="المساحة ليها كلمة سر بالفعل. استخدم «فتح المساحة».";
-      else if(c==="auth/credential-already-in-use")msg.textContent="كلمة السر دي مرتبطة بمساحة مستخدم بالفعل. اختار كلمة مختلفة.";
-      else msg.textContent=authErr(e);
-    }finally{busy=false}
+    }catch(e){msg.textContent=authErr(e)}finally{busy=false}
   };
 }
 function newCode(){var a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,function(b){return b.toString(36).padStart(2,"0")}).join("").slice(0,36)}
