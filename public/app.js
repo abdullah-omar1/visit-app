@@ -469,6 +469,8 @@ function showSpaceGate(auth){
   var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;
   g.hidden=false;inp.value="";msg.textContent="";
   var busy=false,done=function(){g.hidden=true;location.reload()};
+  var legacy=$("spaceLegacy");
+  if(legacy)legacy.onclick=function(){g.hidden=true;msg.textContent="";draw();};
   $("spaceJoin").onclick=async function(){
     if(busy)return;
     var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}
@@ -644,7 +646,7 @@ async function init(){
   }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
   catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
-  if(auth.currentUser&&auth.currentUser.isAnonymous){showSpaceGate(auth);hideLoader();return}
+  if(auth.currentUser&&auth.currentUser.isAnonymous){showSpaceGate(auth)}
   dbx=makeDb(fs,CODE);
   var onErr=function(){
     setMode("مشكلة في الاتصال بالداتا. اتأكد إن قواعد Firestore اتنشرت وإن Anonymous Auth متفعّل.");
