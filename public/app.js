@@ -471,6 +471,7 @@ function showSpaceGate(auth){
       else{await createUserWithEmailAndPassword(auth,spaceEmail(),p);g.hidden=true;location.reload()}
     }catch(e){
       if(e&&e.code==="auth/email-already-in-use"){msg.textContent="المساحة ليها كلمة سر بالفعل. استخدم «فتح المساحة»."}
+      else if(e&&e.code==="auth/operation-not-allowed")msg.textContent="تسجيل الدخول بكلمة سر مش مفعّل للمساحة لسه.";
       else msg.textContent="تعذر تعيين كلمة السر. جرّب كلمة مختلفة.";
     }
   };
@@ -516,14 +517,17 @@ async function autoImageForCatalog(){
     "مانجو":["mango","mango fruit","fresh mango"],
     "قرنفل":["clove","cloves","clove spice"],
     "قراقيش":["qarqeesh","qarqish","egyptian crackers","crackers","sesame crackers"],
-    "كوبايات تيليو بن بنادول ديكانست":["Tchibo coffee cups","Panadol Decongestant","Panadol Cold and Flu","Tchibo decaf"],
-    "كوبايات تيليو بنادول ديكانست":["Tchibo coffee cups","Panadol Decongestant","Panadol Cold and Flu","Tchibo decaf"],
+    "كوبايات تيليو بن بنادول ديكانست":["Tchibo coffee cups","coffee cups","mug","Panadol Decongestant","Panadol Cold and Flu"],
+    "كوبايات تيليو بنادول ديكانست":["Tchibo coffee cups","coffee cups","mug","Panadol Decongestant","Panadol Cold and Flu"],
     "بنادول ديكانست":["Panadol Decongestant","Panadol Cold and Flu","Panadol Decongestant tablets"],
     "بنادول ديكونجست":["Panadol Decongestant","Panadol Cold and Flu","Panadol Decongestant tablets"],
     "كوبايات بن تيليو ديكانست":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
     "كوبايات بن تيليو ديكاف":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
     "بن تيليو ديكانست":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
-    "بن تيليو ديكاف":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"]
+    "بن تيليو ديكاف":["Tchibo Cafissimo Decaf","Tchibo Cafissimo Decaffeinated","Tchibo Decaf coffee capsules","Tchibo decaf"],
+    "كوبايات":["coffee cups","tea cups","mug"],
+    "كوبايات قهوه":["coffee cups","tea cups","mug"],
+    "كوبايات شاي":["tea cups","coffee cups","mug"]
   };
   var terms=function(name,cat){
     var a=[name],k=norm(name).join(" "),ck=norm(cat||"");
