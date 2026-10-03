@@ -255,7 +255,7 @@ function listText(){
   return groups(p).map(function(gr){return(cats().length?(gr.c||"بدون قسم")+":\n":"")+gr.g.map(function(i){return"- "+i.name+(i.qty>1?" ×"+i.qty:"")+(i.note?" ("+i.note+")":"")}).join("\n")}).join("\n\n");
 }
 function copyText(t,msg){
-  var ok=function(){say("تم النسخ ✓");};
+  var ok=function(){toast("تم النسخ ✓");};
   var fb=function(){var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy");ok()}catch(e){say("مقدرتش أنسخ، حددها يدوي.")}document.body.removeChild(a)};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb();
 }
