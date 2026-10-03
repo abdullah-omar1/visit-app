@@ -5,6 +5,29 @@ import {firebaseConfig} from "./config.js";
 var KEY="weekly-orders-v1",NAME={cat:"catalog",cur:"cur",vis:"visits",cg:"categories"},LK={cat:"-catalog",cur:"-cur",vis:"-visits",cg:"-categories"};
 var S={cat:[],cur:[],vis:[],cg:[]},got={},V={},ensured=false,rnFn=null,armedCat="",CODE="",itemO=null,itemPin=false,itemDel=false,deferredInstall=null,lastFin=null,undoFn=null,toastT,sheetO=null,sheetQ=1,phT=null,dbx=null,curCat="",newMode=false,manage=false,newVal="",needFocus=false,showDone=true,armed="",view="visit",canWrite=true,q={},msgT;
 function $(i){return document.getElementById(i)}
+function initTheme(){
+  var saved=lget("-theme","");
+  var root=document.documentElement;
+  if(saved==="light"||saved==="dark")root.setAttribute("data-theme",saved);
+  var b=$("themeBtn");
+  if(b){
+    var update=function(){
+      var dark=root.getAttribute("data-theme")==="dark"||(root.getAttribute("data-theme")!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+      b.textContent=dark?"☀":"◐";b.title=dark?"الوضع الفاتح":"الوضع الداكن";
+    };
+    b.onclick=function(){
+      var current=root.getAttribute("data-theme");
+      var dark=current==="dark"||(current!=="light"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+      var next=dark?"light":"dark";
+      root.setAttribute("data-theme",next);lset("-theme",next);update();
+    };
+    update();
+  }
+  var rb=$("reloadBtn");
+  if(rb)rb.onclick=function(){window.location.reload()};
+}
+
+initTheme();
 function norm(s){return s.trim().replace(/\s+/g," ").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").toLowerCase()}
 function say(t){var m=$("msg");m.textContent=t;clearTimeout(msgT);msgT=setTimeout(function(){m.textContent=""},3500)}
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
