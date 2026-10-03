@@ -749,6 +749,7 @@ async function init(){
       S[c]=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});
       got[c]=true;
       if(got.cat&&got.cg&&!ensured){ensured=true;ensureCats()}
+      if(got.cat)autoImageForCatalog();
       if(got.cat&&got.cg&&got.cur&&got.vis)hideLoader();
       draw();
     },onErr);
