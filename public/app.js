@@ -388,6 +388,8 @@ $("isave").onclick=function(){
   closeItem();draw();say("اتحفظت التعديلات.");
 };
 function hideLoader(){var l=$("bootLoader");if(l){l.classList.add("hide");setTimeout(function(){l.remove()},300)}}
+window.addEventListener("error",function(){var l=$("bootLoader");if(l&&!l.classList.contains("hide")){hideLoader();setMode("حصل خطأ أثناء فتح التطبيق. اضغط ↻ لإعادة المحاولة.");try{draw()}catch(e){}}});
+window.addEventListener("unhandledrejection",function(){var l=$("bootLoader");if(l&&!l.classList.contains("hide")){hideLoader();setMode("حصل خطأ أثناء فتح التطبيق. اضغط ↻ لإعادة المحاولة.");try{draw()}catch(e){}}});
 function setMode(t){$("mode").textContent=t}
 function str(x,n){return String(x==null?"":x).slice(0,n||200)}
 function pairs(a){return(Array.isArray(a)?a:[]).slice(0,500).map(function(x){return{name:str(x&&x.name),cat:str(x&&x.cat),qty:Math.min(99,Math.max(1,Number(x&&x.qty)||1)),note:str(x&&x.note,120),at:Number(x&&x.at)||0}}).filter(function(x){return x.name})}
@@ -590,7 +592,7 @@ async function init(){
   if(m){lset("-code",m[1]);try{history.replaceState(null,"",location.pathname)}catch(e){}}
   CODE=lget("-code","");V=lget("-vmeta",{});
   if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(function(){});
+    navigator.serviceWorker.register("./sw.js",{scope:"./"}).then(function(r){return r.update()}).catch(function(){});
   }
     if(/PASTE_|YOUR_/.test(JSON.stringify(firebaseConfig))){setMode("ملف config.js لسه فاضي. اتبع خطوات README.");draw();hideLoader();return}
   var fs,auth;
