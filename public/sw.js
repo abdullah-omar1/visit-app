@@ -1,5 +1,5 @@
 // Service worker: يخلي التطبيق يفتح من غير نت. غيّر رقم النسخة مع كل تحديث للتطبيق.
-const VERSION = "v13";
+const VERSION = "v14";
 const CACHE = "visit-app-" + VERSION;
 const SHELL = [
   "./",
