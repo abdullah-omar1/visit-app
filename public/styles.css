@@ -7,8 +7,8 @@ body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 *{box-sizing:border-box}
 [hidden]{display:none!important}#bootLoader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);transition:opacity .25s ease,visibility .25s ease}
 #bootLoader.hide{opacity:0;visibility:hidden;pointer-events:none}
-#bootLoader{animation:bootFailSafe 9s linear forwards}
-@keyframes bootFailSafe{0%,88%{opacity:1;visibility:visible;pointer-events:auto}100%{opacity:0;visibility:hidden;pointer-events:none}}
+#bootLoader{animation:bootFailSafe 1.8s linear forwards}
+@keyframes bootFailSafe{0%,60%{opacity:1;visibility:visible;pointer-events:auto}100%{opacity:0;visibility:hidden;pointer-events:none}}
 .bootCard{width:min(88vw,340px);text-align:center;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 20px;box-shadow:0 10px 35px rgba(0,0,0,.08)}
 .bootLogo{width:58px;height:58px;margin:0 auto 14px;border-radius:16px;display:grid;place-items:center;background:var(--accsoft);font-size:28px}
 .bootTitle{font-size:19px;font-weight:700;margin-bottom:5px}.bootText{font-size:14px;color:var(--mute)}
