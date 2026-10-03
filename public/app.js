@@ -1,6 +1,6 @@
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,collection as fcol,doc as fdoc,setDoc as fset,deleteDoc as fdel,onSnapshot as fsnap,query as fquery,orderBy as forder,limit as flimit,getDoc as fget} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {getAuth,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,EmailAuthProvider,linkWithCredential} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAuth,signInAnonymously,createUserWithEmailAndPassword,signInWithEmailAndPassword,EmailAuthProvider,linkWithCredential,updateProfile} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {firebaseConfig} from "./config.js";
 var KEY="weekly-orders-v1",NAME={cat:"catalog",cur:"cur",vis:"visits",cg:"categories"},LK={cat:"-catalog",cur:"-cur",vis:"-visits",cg:"-categories"};
 var S={cat:[],cur:[],vis:[],cg:[]},got={},V={},ensured=false,rnFn=null,armedCat="",CODE="",itemO=null,itemPin=false,itemDel=false,deferredInstall=null,lastFin=null,undoFn=null,toastT,sheetO=null,sheetQ=1,phT=null,dbx=null,curCat="",newMode=false,manage=false,newVal="",needFocus=false,showDone=true,armed="",view="visit",canWrite=true,q={},msgT;
@@ -454,59 +454,13 @@ if(isStandalone()){var ti=$("inst");if(ti)ti.hidden=true;var tp=$("iosTip");if(t
 
 function spaceEmail(){return "space_"+CODE+"@visit-app-mama.local"}
 function modernSpaceEmail(){return "space_"+CODE+"@visit-app-mama.firebaseapp.com"}
-function authErr(e){
-  var c=e&&e.code||"";
-  if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found")return "كلمة السر غير صحيحة.";
-  if(c==="auth/invalid-email")return "بيانات الدخول غير صالحة. جرّب تحديث التطبيق.";
-  if(c==="auth/too-many-requests")return "محاولات كتير. استنى دقيقة وجرب تاني.";
-  if(c==="auth/operation-not-allowed")return "Email/Password مش مفعّل في Firebase. لازم تفعيله مرة واحدة من Authentication.";
-  if(c==="auth/network-request-failed")return "مفيش اتصال بالنت. اتصل بالنت وجرب تاني.";
-  if(c==="auth/provider-already-linked")return "المساحة دي بالفعل عليها كلمة سر. استخدم «فتح المساحة».";
-  if(c==="auth/credential-already-in-use")return "كلمة السر دي مرتبطة بمساحة تانية. اختار كلمة مختلفة.";
-  return "تعذر تعيين كلمة السر. جرّب تاني.";
-}
-function showSpaceGate(auth){
-  var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;
-  g.hidden=false;inp.value="";msg.textContent="";
-  var busy=false,done=function(){g.hidden=true;location.reload()};
-  var legacy=$("spaceLegacy");
-  if(legacy)legacy.onclick=function(){g.hidden=true;msg.textContent="";draw();};
-  $("spaceJoin").onclick=async function(){
-    if(busy)return;
-    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}
-    busy=true;msg.textContent="بنفتح المساحة…";
-    try{
-      try{await signInWithEmailAndPassword(auth,spaceEmail(),p)}
-      catch(first){
-        if((first&&first.code)==="auth/user-not-found"||(first&&first.code)==="auth/invalid-credential")await signInWithEmailAndPassword(auth,modernSpaceEmail(),p);
-        else throw first;
-      }
-      done();
-    }catch(e){msg.textContent=authErr(e)}finally{busy=false}
-  };
-  $("spaceSet").onclick=async function(){
-    if(busy)return;
-    var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}
-    busy=true;msg.textContent="بنثبت كلمة السر على نفس المساحة…";
-    try{
-      var u=auth.currentUser;
-      if(!u||!u.isAnonymous){msg.textContent="الجلسة الحالية مش جاهزة للتعيين. افتح الرابط من جديد.";return}
-      try{
-        await linkWithCredential(u,EmailAuthProvider.credential(spaceEmail(),p));
-      }catch(first){
-        var code=first&&first.code||"";
-        if(code==="auth/email-already-in-use"){
-          await signInWithEmailAndPassword(auth,spaceEmail(),p);
-        }else if(code==="auth/invalid-email"){
-          await linkWithCredential(u,EmailAuthProvider.credential(modernSpaceEmail(),p));
-        }else{
-          throw first;
-        }
-      }
-      done();
-    }catch(e){msg.textContent=authErr(e)}finally{busy=false}
-  };
-}
+async function passwordEmail(p){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(p)),a=new Uint8Array(b),h=Array.from(a,function(x){return x.toString(16).padStart(2,"0")}).join("");return "key_"+h+"@visit-app-mama.local"}
+async function signInByPassword(auth,p){var email=await passwordEmail(p),u=(await signInWithEmailAndPassword(auth,email,p)).user,c=codeFrom(u.displayName||"");if(!c)throw Object.assign(new Error("NO_SPACE"),{code:"auth/no-space-key"});lset("-code",c);return u}
+async function ensurePasswordKey(auth,p,code){var email=await passwordEmail(p),u=null;try{u=(await createUserWithEmailAndPassword(auth,email,p)).user}catch(e){if(e&&e.code==="auth/email-already-in-use")u=(await signInWithEmailAndPassword(auth,email,p)).user;else throw e}var existing=codeFrom(u.displayName||"");if(existing&&existing!==code)throw Object.assign(new Error("USED"),{code:"auth/credential-already-in-use"});if(existing!==code)await updateProfile(u,{displayName:code});lset("-code",code);return u}
+function authErr(e){var c=e&&e.code||"";if(c==="auth/invalid-credential"||c==="auth/wrong-password"||c==="auth/user-not-found")return "كلمة السر غير صحيحة.";if(c==="auth/no-space-key")return "كلمة السر دي لسه مش مرتبطة بمساحة. استخدم الرابط مرة واحدة لتربطها بالمساحة.";if(c==="auth/invalid-email")return "بيانات الدخول غير صالحة. جرّب تحديث التطبيق.";if(c==="auth/too-many-requests")return "محاولات كتير. استنى دقيقة وجرب تاني.";if(c==="auth/operation-not-allowed")return "Email/Password مش مفعّل في Firebase. لازم تفعيله مرة واحدة من Authentication.";if(c==="auth/network-request-failed")return "مفيش اتصال بالنت. اتصل بالنت وجرب تاني.";if(c==="auth/credential-already-in-use")return "كلمة السر دي مرتبطة بمساحة تانية. اختار كلمة مختلفة.";return "تعذر تنفيذ العملية. جرّب تاني."}
+function showSpaceGate(auth){var g=$("spaceGate"),inp=$("spacePass"),msg=$("spaceMsg");if(!g)return;g.hidden=false;inp.value="";msg.textContent="";var busy=false,done=function(){g.hidden=true;location.reload()};var legacy=$("spaceLegacy");if(legacy)legacy.onclick=function(){g.hidden=true;msg.textContent="";draw()};$("spaceJoin").onclick=async function(){if(busy)return;var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}busy=true;msg.textContent="بنفتح بكلمة السر…";try{await signInByPassword(auth,p);done()}catch(e){if(CODE&&(e.code==="auth/user-not-found"||e.code==="auth/invalid-credential")){try{await signInWithEmailAndPassword(auth,spaceEmail(),p);done();return}catch(old){e=old}}msg.textContent=authErr(e)}finally{busy=false}};$("spaceSet").onclick=async function(){if(busy)return;var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}busy=true;msg.textContent="بنثبت كلمة السر على نفس المساحة…";try{if(!CODE){msg.textContent="المساحة مش محددة. استخدم الرابط مرة واحدة.";return}await ensurePasswordKey(auth,p,CODE);done()}catch(e){msg.textContent=authErr(e)}finally{busy=false}}}
+function createPasswordSpace(auth,p){return passwordEmail(p).then(function(email){return createUserWithEmailAndPassword(auth,email,p).then(function(cr){var code=newCode();return updateProfile(cr.user,{displayName:code}).then(function(){lset("-code",code);return code})}).catch(function(e){if(e&&e.code==="auth/email-already-in-use")return signInWithEmailAndPassword(auth,email,p).then(function(cr){var code=codeFrom(cr.user.displayName||"");if(!code)throw Object.assign(new Error("NO_SPACE"),{code:"auth/no-space-key"});lset("-code",code);return code});throw e})})}
+function showPasswordSetup(auth){var box=$("passwordSetup"),inp=$("newSpacePass"),msg=$("newSpaceMsg");if(!box)return;var busy=false;$("createPasswordSpace").onclick=async function(){if(busy)return;var p=inp.value.trim();if(p.length<6){msg.textContent="كلمة السر لازم تكون 6 أحرف أو أرقام على الأقل.";return}busy=true;msg.textContent="بننشئ المساحة…";try{await createPasswordSpace(auth,p);location.reload()}catch(e){msg.textContent=authErr(e)}finally{busy=false}};$("passwordLinkGo").onclick=function(){var c=codeFrom($("passwordLink").value);if(!c){msg.textContent="الرابط أو الكود مش صحيح.";return}lset("-code",c);location.reload()}}
 function newCode(){var a=new Uint8Array(24);crypto.getRandomValues(a);return Array.from(a,function(b){return b.toString(36).padStart(2,"0")}).join("").slice(0,36)}
 function codeFrom(t){t=String(t||"").trim();var m=t.match(/c=([A-Za-z0-9_-]{20,})/)||t.match(/^([A-Za-z0-9_-]{20,})$/);return m?m[1]:""}
 function shareLink(){return location.origin+location.pathname.replace(/index\.html$/,"")+"#c="+CODE}
@@ -632,8 +586,7 @@ async function init(){
   if("serviceWorker" in navigator){
     navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(function(){});
   }
-  if(!CODE){go("setup");hideLoader();return}
-  if(/PASTE_|YOUR_/.test(JSON.stringify(firebaseConfig))){setMode("ملف config.js لسه فاضي. اتبع خطوات README.");draw();hideLoader();return}
+    if(/PASTE_|YOUR_/.test(JSON.stringify(firebaseConfig))){setMode("ملف config.js لسه فاضي. اتبع خطوات README.");draw();hideLoader();return}
   var fs,auth;
   try{
     var app=initializeApp(firebaseConfig);
@@ -646,6 +599,7 @@ async function init(){
   }catch(e){setMode("مشكلة في إعداد Firebase: "+((e&&e.message)||e));draw();hideLoader();return}
   try{if(auth.authStateReady)await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth)}
   catch(e){if(!auth.currentUser){setMode("محتاج نت أول مرة بس. اتصل بالنت وافتح التطبيق تاني.");draw();hideLoader();return}}
+  if(!CODE){showPasswordSetup(auth);hideLoader();return}
   if(auth.currentUser&&auth.currentUser.isAnonymous){showSpaceGate(auth)}
   dbx=makeDb(fs,CODE);
   var onErr=function(){
